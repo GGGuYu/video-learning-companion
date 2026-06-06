@@ -108,6 +108,59 @@ video-workspace/
 - `transcript.json`：不需要，可以删除（我们只用txt）
 - 定期清理clips目录中的临时片段
 
+## 参考脚本（references目录）
+
+本Skills提供了完整的参考脚本，位于`references/`目录中：
+
+```
+references/
+├── README.md               # 脚本使用说明
+├── transcribe.py           # ASR转写脚本
+└── analyze_video.py        # 视频理解脚本
+```
+
+### 脚本说明
+
+| 脚本 | 功能 | 用途 |
+|:-----|:-----|:-----|
+| transcribe.py | ASR转写（百炼 fun-asr） | 语音转文字，生成带时间戳的文本 |
+| analyze_video.py | 视频理解（qwen3.5-omni-plus） | 分析视频画面，提取关键信息 |
+
+### 如何使用这些脚本
+
+**1. 复制脚本到工作目录**：
+```bash
+cp references/transcribe.py /path/to/your/workspace/
+cp references/analyze_video.py /path/to/your/workspace/
+```
+
+**2. 配置环境变量**：
+```bash
+export DASHSCOPE_API_KEY="your_dashscope_api_key"
+export OSS_ACCESS_KEY_ID="your_oss_access_key_id"
+export OSS_ACCESS_KEY_SECRET="your_oss_access_key_secret"
+export OSS_BUCKET="your_oss_bucket"
+```
+
+**3. 运行脚本**：
+```bash
+# ASR转写
+python3 transcribe.py video.mp4
+
+# 视频理解
+python3 analyze_video.py video.mp4
+```
+
+### 如果脚本无法运行
+
+**常见问题**：
+1. **环境变量未设置**：检查是否正确设置了所有必需的环境变量
+2. **依赖未安装**：运行`pip install oss2 dashscope openai`
+3. **OSS配置错误**：检查Bucket名称、AccessKey是否正确
+4. **API Key无效**：检查百炼API Key是否有效
+
+**详细配置说明**：请参考`references/README.md`和`design.md`中的配置要求章节。
+
 ## 配置要求
 
 ### 1. 环境依赖
@@ -116,34 +169,47 @@ video-workspace/
 # yt-dlp（B站视频下载）
 pip install yt-dlp
 
-# Python依赖（用于ASR转写）
-pip install oss2 dashscope
+# Python依赖（用于ASR转写和视频理解）
+pip install oss2 dashscope openai
+
+# ffmpeg（视频处理，通常已预装）
+# macOS: brew install ffmpeg
+# Ubuntu: sudo apt install ffmpeg
 ```
 
 ### 2. API配置
 
-需要配置以下环境变量或在脚本中设置：
+**只需要一个阿里云百炼API Key**，但需要开通两个模型：
 
+| 模型 | 用途 | 计费方式 |
+|:-----|:-----|:---------|
+| fun-asr | 语音转文字 | ¥0.00022/秒 |
+| qwen3.5-omni-plus | 视频理解 | ¥7/百万Token（视频帧） |
+
+**环境变量配置**：
 ```bash
-# 阿里云OSS（用于ASR转写）
-OSS_ACCESS_KEY_ID=your_access_key_id
-OSS_ACCESS_KEY_SECRET=your_access_key_secret
-OSS_ENDPOINT=oss-cn-beijing.aliyuncs.com
-OSS_BUCKET=your_bucket_name
+# 阿里云百炼API
+export DASHSCOPE_API_KEY="sk-xxxxx"
 
-# 百炼API（用于ASR和omni分析）
-DASHSCOPE_API_KEY=your_dashscope_api_key
+# 阿里云OSS（用于上传大文件）
+export OSS_ACCESS_KEY_ID="LTAIxxxxxx"
+export OSS_ACCESS_KEY_SECRET="xxxxxx"
+export OSS_BUCKET="your-bucket"
 ```
 
-### 3. 参考脚本
+### 3. 获取配置
 
-以下脚本需要放在工作目录中：
+**阿里云百炼API Key**：
+1. 注册阿里云账号
+2. 开通百炼服务
+3. 获取API Key
 
-- `transcribe.py`：ASR转写脚本（百炼 fun-asr）
-- `analyze_audio.py`：音频智能分析脚本（qwen3.5-omni-plus）
-- `cleanup_oss.py`：清理OSS临时文件
+**阿里云OSS配置**：
+1. 在阿里云控制台创建OSS Bucket
+2. 获取AccessKey ID和Secret
+3. 配置Bucket权限（建议私有读写）
 
-**注意**：这些脚本需要根据实际环境修改配置参数。
+**详细配置指南**：请参考`design.md`中的"配置要求"章节。
 
 ## 详细步骤
 
